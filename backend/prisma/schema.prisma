@@ -1,0 +1,116 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String // Hash
+  email     String   @unique
+  name      String
+  role      String   @default("admin") // "admin"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Service {
+  id              String    @id @default(uuid())
+  name            String
+  description     String
+  price           Float
+  durationMinutes Int       // e.g., 60, 120, 360
+  includes        String    // JSON string or comma-separated list of items included
+  imageUrl        String    // URL or path to service image
+  active          Boolean   @default(true)
+  bookings        Booking[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Booking {
+  id             String   @id @default(uuid())
+  date           String   // YYYY-MM-DD
+  startTime      String   // HH:MM (e.g. "09:00")
+  endTime        String   // HH:MM (e.g. "11:00")
+  customerName   String
+  customerPhone  String
+  customerEmail  String?
+  vehicleType    String   // e.g. "Sedan", "SUV", "Pickup", "Motocicleta"
+  vehiclePlate   String
+  observations   String?
+  paymentMethod  String   // "Efectivo", "Transferencia", "Mercado Pago", "Tarjeta Credito", "Tarjeta Debito"
+  paymentStatus  String   // "Pendiente", "Pagado", "Cancelado"
+  bookingStatus  String   // "Pendiente", "Confirmado", "Finalizado", "Cancelado"
+  totalAmount    Float
+  pointsEarned   Int      @default(0)
+  serviceId      String
+  service        Service  @relation(fields: [serviceId], references: [id])
+  customerId     String?
+  customer       Customer? @relation(fields: [customerId], references: [id])
+  payments       Payment[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Customer {
+  id            String    @id @default(uuid())
+  name          String
+  phone         String    @unique
+  email         String?
+  vehicleType   String
+  vehiclePlate  String
+  loyaltyPoints Int       @default(0)
+  totalSpent    Float     @default(0.0)
+  lastVisit     DateTime?
+  bookings      Booking[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  bookingId     String
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  amount        Float
+  method        String   // "Efectivo", "Transferencia", etc.
+  status        String   // "Pendiente", "Pagado", "Cancelado"
+  transactionId String?  // ID de transaccion externa (e.g., Mercado Pago)
+  date          DateTime @default(now())
+}
+
+model Setting {
+  id        String   @id @default(uuid())
+  key       String   @unique // e.g., "business_hours", "blocked_dates", "loyalty_rule", "active_payments"
+  value     String   // JSON stringified configuration
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Promotion {
+  id              String   @id @default(uuid())
+  code            String   @unique // e.g., "WASH10"
+  description     String
+  discountPercent Float
+  active          Boolean  @default(true)
+  expiryDate      String?  // YYYY-MM-DD
+  createdAt       DateTime @default(now())
+}
+
+model Review {
+  id                 String   @id @default(uuid())
+  customerName       String
+  rating             Int      // 1 to 5
+  comment            String
+  date               String   // YYYY-MM-DD
+  approved           Boolean  @default(false)
+  vehicleImageBefore String?
+  vehicleImageAfter  String?
+  createdAt          DateTime @default(now())
+}
