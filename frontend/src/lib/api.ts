@@ -189,20 +189,67 @@ interface MockDB {
   reviews: any[];
 }
 
-// Initialize Mock DB in browser if not exists
-function getMockDB(): MockDB {
-  if (typeof window === 'undefined') return DEFAULT_MOCK_DATA;
-  const stored = localStorage.getItem(MOCK_STORAGE_KEY);
-  if (!stored) {
-    localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(DEFAULT_MOCK_DATA));
-    return DEFAULT_MOCK_DATA;
+// Firebase configuration endpoints
+const FIREBASE_URL = 'https://sistemasdedetailing-default-rtdb.firebaseio.com';
+
+
+// Helper to write to Firebase
+async function writeFirebase(path: string, data: any): Promise<void> {
+  try {
+    await fetch(`${FIREBASE_URL}/${path}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  } catch (err) {
+    console.error('Firebase write error:', err);
   }
-  return JSON.parse(stored);
 }
 
-function saveMockDB(data: any) {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(data));
+// Helper to read from Firebase and fallback to local storage
+async function readFirebase(path: string, defaultData: any): Promise<any> {
+  try {
+    const res = await fetch(`${FIREBASE_URL}/${path}.json`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data !== null) {
+        return data;
+      }
+    }
+  } catch (err) {
+    console.error('Firebase read error:', err);
+  }
+
+  // Fallback to local storage
+  if (typeof window !== 'undefined') {
+    const local = localStorage.getItem(MOCK_STORAGE_KEY + '_' + path);
+    if (local) return JSON.parse(local);
+  }
+  return defaultData;
+}
+
+let isSeeded = false;
+
+async function ensureSeeded() {
+  if (isSeeded) return;
+  try {
+    const res = await fetch(`${FIREBASE_URL}/.json`);
+    if (res.ok) {
+      const db = await res.json();
+      if (db === null || !db.services || db.services.length === 0) {
+        // Seed entire mock data to Firebase
+        await fetch(`${FIREBASE_URL}/.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(DEFAULT_MOCK_DATA)
+        });
+        console.log('Firebase Realtime Database seeded successfully.');
+      }
+      isSeeded = true;
+    }
+  } catch (err) {
+    console.error('Firebase seeding check error:', err);
+  }
 }
 
 // Check JWT Token
@@ -216,78 +263,53 @@ function getAuthHeader(): Record<string, string> {
 export const api = {
   // 1. SERVICES
   getServices: async (): Promise<any[]> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/services/public`);
-      if (res.ok) return await res.json();
-    } catch (_) {}
-    // Fallback
-    return getMockDB().services.filter(s => s.active);
+    await ensureSeeded();
+    const services = await readFirebase('services', DEFAULT_MOCK_DATA.services);
+    return services.filter((s: any) => s && s.active);
   },
 
   getAdminServices: async (): Promise<any[]> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/services`, { headers: getAuthHeader() });
-      if (res.ok) return await res.json();
-    } catch (_) {}
-    return getMockDB().services;
+    await ensureSeeded();
+    const services = await readFirebase('services', DEFAULT_MOCK_DATA.services);
+    return services.filter(Boolean);
   },
 
   createService: async (serviceData: any): Promise<any> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/services`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-        body: JSON.stringify(serviceData)
-      });
-      if (res.ok) return await res.json();
-    } catch (_) {}
-    // Fallback
-    const db = getMockDB();
+    await ensureSeeded();
+    const services = await readFirebase('services', DEFAULT_MOCK_DATA.services);
     const newService = { id: `srv-${Math.random().toString(36).substr(2, 9)}`, ...serviceData, active: true };
-    db.services.push(newService);
-    saveMockDB(db);
+    services.push(newService);
+    await writeFirebase('services', services);
+    if (typeof window !== 'undefined') localStorage.setItem(MOCK_STORAGE_KEY + '_services', JSON.stringify(services));
     return newService;
   },
 
   updateService: async (id: string, serviceData: any): Promise<any> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/services/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-        body: JSON.stringify(serviceData)
-      });
-      if (res.ok) return await res.json();
-    } catch (_) {}
-    // Fallback
-    const db = getMockDB();
-    const index = db.services.findIndex(s => s.id === id);
-    if (index !== -1) {
-      db.services[index] = { ...db.services[index], ...serviceData };
-      saveMockDB(db);
-      return db.services[index];
+    await ensureSeeded();
+    const services = await readFirebase('services', DEFAULT_MOCK_DATA.services);
+    const idx = services.findIndex((s: any) => s && s.id === id);
+    if (idx !== -1) {
+      services[idx] = { ...services[idx], ...serviceData };
+      await writeFirebase('services', services);
+      if (typeof window !== 'undefined') localStorage.setItem(MOCK_STORAGE_KEY + '_services', JSON.stringify(services));
+      return services[idx];
     }
   },
 
   deleteService: async (id: string): Promise<boolean> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/services/${id}`, {
-        method: 'DELETE',
-        headers: getAuthHeader()
-      });
-      if (res.ok) return true;
-    } catch (_) {}
-    // Fallback
-    const db = getMockDB();
-    const index = db.services.findIndex(s => s.id === id);
-    if (index !== -1) {
-      // If it has bookings, just deactivate it, else remove it
-      const hasBookings = db.bookings.some(b => b.serviceId === id);
+    await ensureSeeded();
+    const services = await readFirebase('services', DEFAULT_MOCK_DATA.services);
+    const bookings = await readFirebase('bookings', DEFAULT_MOCK_DATA.bookings);
+    const idx = services.findIndex((s: any) => s && s.id === id);
+    if (idx !== -1) {
+      const hasBookings = bookings.some((b: any) => b && b.serviceId === id);
       if (hasBookings) {
-        db.services[index].active = false;
+        services[idx].active = false;
       } else {
-        db.services.splice(index, 1);
+        services.splice(idx, 1);
       }
-      saveMockDB(db);
+      await writeFirebase('services', services);
+      if (typeof window !== 'undefined') localStorage.setItem(MOCK_STORAGE_KEY + '_services', JSON.stringify(services));
       return true;
     }
     return false;
@@ -295,19 +317,16 @@ export const api = {
 
   // 2. BOOKINGS & SLOTS
   getAvailableSlots: async (date: string, serviceId: string): Promise<string[]> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/bookings/slots?date=${date}&serviceId=${serviceId}`);
-      if (res.ok) return await res.json();
-    } catch (_) {}
+    await ensureSeeded();
+    const services = await readFirebase('services', DEFAULT_MOCK_DATA.services);
+    const bookings = await readFirebase('bookings', DEFAULT_MOCK_DATA.bookings);
+    const settings = await readFirebase('settings', DEFAULT_MOCK_DATA.settings);
 
-    // Fallback implementation in React client
-    const db = getMockDB();
-    const service = db.services.find(s => s.id === serviceId);
+    const service = services.find((s: any) => s && s.id === serviceId);
     if (!service) return [];
     
-    // Simple mock slot generator
-    const dateBookings = db.bookings.filter(b => b.date === date && b.bookingStatus !== 'Cancelado');
-    const interval = parseInt(db.settings.time_interval || '60');
+    const dateBookings = bookings.filter((b: any) => b && b.date === date && b.bookingStatus !== 'Cancelado');
+    const interval = parseInt(settings.time_interval || '60');
     
     const slots = [];
     const startMins = 9 * 60; // 09:00
@@ -318,10 +337,8 @@ export const api = {
       const slotEnd = current + duration;
       if (slotEnd > endMins) continue;
       
-      // check lunch (12:00 to 13:00)
       if (current < 13 * 60 && slotEnd > 12 * 60) continue;
 
-      // check overlap
       let isOverlapping = false;
       for (const b of dateBookings) {
         const [sh, sm] = b.startTime.split(':').map(Number);
@@ -345,18 +362,13 @@ export const api = {
   },
 
   createBooking: async (bookingData: any): Promise<any> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/bookings`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bookingData)
-      });
-      if (res.ok) return await res.json();
-    } catch (_) {}
+    await ensureSeeded();
+    const services = await readFirebase('services', DEFAULT_MOCK_DATA.services);
+    const bookings = await readFirebase('bookings', DEFAULT_MOCK_DATA.bookings);
+    const customers = await readFirebase('customers', DEFAULT_MOCK_DATA.customers);
+    const promotions = await readFirebase('promotions', DEFAULT_MOCK_DATA.promotions);
 
-    // Fallback local storage
-    const db = getMockDB();
-    const service = db.services.find(s => s.id === bookingData.serviceId);
+    const service = services.find((s: any) => s && s.id === bookingData.serviceId);
     const duration = service ? service.durationMinutes : 60;
     
     const [sh, sm] = bookingData.startTime.split(':').map(Number);
@@ -365,20 +377,16 @@ export const api = {
     const em = endMins % 60;
     const endTime = `${String(eh).padStart(2, '0')}:${String(em).padStart(2, '0')}`;
 
-    // Calculate loyalty points
-    let customer = db.customers.find(c => c.phone === bookingData.customerPhone);
+    let customer = customers.find((c: any) => c && c.phone === bookingData.customerPhone);
     let totalAmount = service ? service.price : 2500;
-    let loyaltyApplied = false;
 
     if (customer) {
       if (customer.loyaltyPoints >= 10) {
         totalAmount = 0;
-        loyaltyApplied = true;
         customer.loyaltyPoints = 0;
       } else {
-        // apply promo
         if (bookingData.promoCode) {
-          const promo = db.promotions.find(p => p.code === bookingData.promoCode.toUpperCase() && p.active);
+          const promo = promotions.find((p: any) => p && p.code === bookingData.promoCode.toUpperCase() && p.active);
           if (promo) {
             totalAmount = totalAmount - (totalAmount * promo.discountPercent / 100);
           }
@@ -396,7 +404,7 @@ export const api = {
         totalSpent: 0,
         lastVisit: null
       };
-      db.customers.push(customer);
+      customers.push(customer);
     }
 
     const newBooking = {
@@ -408,51 +416,45 @@ export const api = {
       totalAmount
     };
 
-    db.bookings.push(newBooking);
-    saveMockDB(db);
+    bookings.push(newBooking);
+    await writeFirebase('bookings', bookings);
+    await writeFirebase('customers', customers);
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(MOCK_STORAGE_KEY + '_bookings', JSON.stringify(bookings));
+      localStorage.setItem(MOCK_STORAGE_KEY + '_customers', JSON.stringify(customers));
+    }
     return newBooking;
   },
 
   getBookings: async (startDate?: string, endDate?: string): Promise<any[]> => {
-    try {
-      let url = `${API_BASE_URL}/bookings`;
-      if (startDate && endDate) url += `?start_date=${startDate}&end_date=${endDate}`;
-      const res = await fetch(url, { headers: getAuthHeader() });
-      if (res.ok) return await res.json();
-    } catch (_) {}
+    await ensureSeeded();
+    const bookings = await readFirebase('bookings', DEFAULT_MOCK_DATA.bookings);
+    const services = await readFirebase('services', DEFAULT_MOCK_DATA.services);
 
-    const db = getMockDB();
-    const services = db.services;
-    let list = db.bookings.map(b => ({
+    let list = bookings.filter(Boolean).map((b: any) => ({
       ...b,
-      service: services.find(s => s.id === b.serviceId)
+      service: services.find((s: any) => s && s.id === b.serviceId)
     }));
 
     if (startDate && endDate) {
-      list = list.filter(b => b.date >= startDate && b.date <= endDate);
+      list = list.filter((b: any) => b.date >= startDate && b.date <= endDate);
     }
     return list;
   },
 
   updateBooking: async (id: string, updateData: any): Promise<any> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/bookings/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-        body: JSON.stringify(updateData)
-      });
-      if (res.ok) return await res.json();
-    } catch (_) {}
+    await ensureSeeded();
+    const bookings = await readFirebase('bookings', DEFAULT_MOCK_DATA.bookings);
+    const customers = await readFirebase('customers', DEFAULT_MOCK_DATA.customers);
 
-    const db = getMockDB();
-    const idx = db.bookings.findIndex(b => b.id === id);
+    const idx = bookings.findIndex((b: any) => b && b.id === id);
     if (idx !== -1) {
-      db.bookings[idx] = { ...db.bookings[idx], ...updateData };
+      bookings[idx] = { ...bookings[idx], ...updateData };
       
-      // Handle customer stats update upon finalization
       if (updateData.bookingStatus === 'Finalizado') {
-        const booking = db.bookings[idx];
-        const customer = db.customers.find(c => c.phone === booking.customerPhone);
+        const booking = bookings[idx];
+        const customer = customers.find((c: any) => c && c.phone === booking.customerPhone);
         if (customer) {
           customer.loyaltyPoints += booking.totalAmount > 0 ? 1 : 0;
           customer.totalSpent += booking.totalAmount;
@@ -460,87 +462,75 @@ export const api = {
         }
       }
       
-      saveMockDB(db);
-      return db.bookings[idx];
+      await writeFirebase('bookings', bookings);
+      await writeFirebase('customers', customers);
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(MOCK_STORAGE_KEY + '_bookings', JSON.stringify(bookings));
+        localStorage.setItem(MOCK_STORAGE_KEY + '_customers', JSON.stringify(customers));
+      }
+      return bookings[idx];
     }
   },
 
   getStats: async (): Promise<any> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/bookings/stats`, { headers: getAuthHeader() });
-      if (res.ok) return await res.json();
-    } catch (_) {}
+    await ensureSeeded();
+    const bookings = await readFirebase('bookings', DEFAULT_MOCK_DATA.bookings);
+    const customers = await readFirebase('customers', DEFAULT_MOCK_DATA.customers);
 
-    const db = getMockDB();
     const today = new Date().toISOString().split('T')[0];
-    
-    const bookingsToday = db.bookings.filter(b => b.date === today && b.bookingStatus !== 'Cancelado').length;
-    const totalCustomers = db.customers.length;
-    
-    const paidTodayBookings = db.bookings.filter(b => b.date === today && b.paymentStatus === 'Pagado' && b.bookingStatus !== 'Cancelado');
-    const earningsToday = paidTodayBookings.reduce((sum, b) => sum + b.totalAmount, 0);
+    const activeBookings = bookings.filter(Boolean);
+    const activeCustomers = customers.filter(Boolean);
 
-    const currentMonth = today.substring(0, 7); // "YYYY-MM"
-    const paidMonthBookings = db.bookings.filter(b => b.date.startsWith(currentMonth) && b.paymentStatus === 'Pagado' && b.bookingStatus !== 'Cancelado');
-    const earningsMonth = paidMonthBookings.reduce((sum, b) => sum + b.totalAmount, 0);
+    const bookingsToday = activeBookings.filter((b: any) => b.date === today && b.bookingStatus !== 'Cancelado').length;
+    const totalCustomers = activeCustomers.length;
+    
+    const paidTodayBookings = activeBookings.filter((b: any) => b.date === today && b.paymentStatus === 'Pagado' && b.bookingStatus !== 'Cancelado');
+    const earningsToday = paidTodayBookings.reduce((sum: number, b: any) => sum + b.totalAmount, 0);
+
+    const currentMonth = today.substring(0, 7);
+    const paidMonthBookings = activeBookings.filter((b: any) => b.date.startsWith(currentMonth) && b.paymentStatus === 'Pagado' && b.bookingStatus !== 'Cancelado');
+    const earningsMonth = paidMonthBookings.reduce((sum: number, b: any) => sum + b.totalAmount, 0);
 
     return {
       bookingsToday,
-      bookingsWeek: db.bookings.filter(b => b.bookingStatus !== 'Cancelado').length, // simple mock scale
+      bookingsWeek: activeBookings.filter((b: any) => b.bookingStatus !== 'Cancelado').length,
       totalCustomers,
       earningsToday,
       earningsMonth,
       popularService: { name: "Lavado Premium", count: 12 },
-      frequentCustomers: db.customers.sort((a,b) => b.totalSpent - a.totalSpent).slice(0, 5)
+      frequentCustomers: activeCustomers.sort((a: any, b: any) => b.totalSpent - a.totalSpent).slice(0, 5)
     };
   },
 
   // 3. SETTINGS
   getSettings: async (): Promise<any> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/settings`);
-      if (res.ok) return await res.json();
-    } catch (_) {}
-    return getMockDB().settings;
+    await ensureSeeded();
+    return await readFirebase('settings', DEFAULT_MOCK_DATA.settings);
   },
 
   saveSettings: async (settingsData: any): Promise<any> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/settings/batch`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-        body: JSON.stringify(settingsData)
-      });
-      if (res.ok) return await res.json();
-    } catch (_) {}
-
-    const db = getMockDB();
-    db.settings = { ...db.settings, ...settingsData };
-    saveMockDB(db);
-    return db.settings;
+    await ensureSeeded();
+    const settings = await readFirebase('settings', DEFAULT_MOCK_DATA.settings);
+    const updated = { ...settings, ...settingsData };
+    await writeFirebase('settings', updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(MOCK_STORAGE_KEY + '_settings', JSON.stringify(updated));
+    }
+    return updated;
   },
 
   // 4. PROMOTIONS
   getPromotions: async (): Promise<any[]> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/promotions`, { headers: getAuthHeader() });
-      if (res.ok) return await res.json();
-    } catch (_) {}
-    return getMockDB().promotions;
+    await ensureSeeded();
+    const promotions = await readFirebase('promotions', DEFAULT_MOCK_DATA.promotions);
+    return promotions.filter(Boolean);
   },
 
   validatePromoCode: async (code: string): Promise<any> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/promotions/validate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code })
-      });
-      if (res.ok) return await res.json();
-    } catch (_) {}
-
-    const db = getMockDB();
-    const promo = db.promotions.find(p => p.code.toUpperCase() === code.toUpperCase() && p.active);
+    await ensureSeeded();
+    const promotions = await readFirebase('promotions', DEFAULT_MOCK_DATA.promotions);
+    const promo = promotions.find((p: any) => p && p.code.toUpperCase() === code.toUpperCase() && p.active);
     if (promo) {
       return { valid: true, code: promo.code, discountPercent: promo.discountPercent, description: promo.description };
     }
@@ -549,103 +539,75 @@ export const api = {
 
   // 5. REVIEWS
   getReviews: async (): Promise<any[]> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/reviews/public`);
-      if (res.ok) return await res.json();
-    } catch (_) {}
-    return getMockDB().reviews.filter(r => r.approved);
+    await ensureSeeded();
+    const reviews = await readFirebase('reviews', DEFAULT_MOCK_DATA.reviews);
+    return reviews.filter((r: any) => r && r.approved);
   },
 
   getAdminReviews: async (): Promise<any[]> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/reviews`, { headers: getAuthHeader() });
-      if (res.ok) return await res.json();
-    } catch (_) {}
-    return getMockDB().reviews;
+    await ensureSeeded();
+    const reviews = await readFirebase('reviews', DEFAULT_MOCK_DATA.reviews);
+    return reviews.filter(Boolean);
   },
 
   approveReview: async (id: string, approved: boolean): Promise<any> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/reviews/${id}/approve`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
-        body: JSON.stringify({ approved })
-      });
-      if (res.ok) return await res.json();
-    } catch (_) {}
-
-    // Fallback Local Storage
-    const db = getMockDB();
-    const idx = db.reviews.findIndex(r => r.id === id);
+    await ensureSeeded();
+    const reviews = await readFirebase('reviews', DEFAULT_MOCK_DATA.reviews);
+    const idx = reviews.findIndex((r: any) => r && r.id === id);
     if (idx !== -1) {
-      db.reviews[idx].approved = approved;
-      saveMockDB(db);
-      return db.reviews[idx];
+      reviews[idx].approved = approved;
+      await writeFirebase('reviews', reviews);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(MOCK_STORAGE_KEY + '_reviews', JSON.stringify(reviews));
+      }
+      return reviews[idx];
     }
   },
 
   deleteReview: async (id: string): Promise<boolean> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/reviews/${id}`, {
-        method: 'DELETE',
-        headers: getAuthHeader()
-      });
-      if (res.ok) return true;
-    } catch (_) {}
-
-    // Fallback Local Storage
-    const db = getMockDB();
-    const idx = db.reviews.findIndex(r => r.id === id);
+    await ensureSeeded();
+    const reviews = await readFirebase('reviews', DEFAULT_MOCK_DATA.reviews);
+    const idx = reviews.findIndex((r: any) => r && r.id === id);
     if (idx !== -1) {
-      db.reviews.splice(idx, 1);
-      saveMockDB(db);
+      reviews.splice(idx, 1);
+      await writeFirebase('reviews', reviews);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(MOCK_STORAGE_KEY + '_reviews', JSON.stringify(reviews));
+      }
       return true;
     }
     return false;
   },
 
   createReview: async (reviewData: any): Promise<any> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/reviews`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(reviewData)
-      });
-      if (res.ok) return await res.json();
-    } catch (_) {}
-
-    const db = getMockDB();
+    await ensureSeeded();
+    const reviews = await readFirebase('reviews', DEFAULT_MOCK_DATA.reviews);
     const newReview = {
       id: `rev-${Math.random().toString(36).substr(2, 9)}`,
       ...reviewData,
       date: new Date().toISOString().split('T')[0],
-      approved: false // requires admin approval
+      approved: false
     };
-    db.reviews.push(newReview);
-    saveMockDB(db);
+    reviews.push(newReview);
+    await writeFirebase('reviews', reviews);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(MOCK_STORAGE_KEY + '_reviews', JSON.stringify(reviews));
+    }
     return newReview;
   },
 
-
   // 6. CUSTOMERS
   getCustomers: async (): Promise<any[]> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/customers`, { headers: getAuthHeader() });
-      if (res.ok) return await res.json();
-    } catch (_) {}
-    return getMockDB().customers;
+    await ensureSeeded();
+    const customers = await readFirebase('customers', DEFAULT_MOCK_DATA.customers);
+    return customers.filter(Boolean);
   },
 
   // 7. PAYMENTS
   getPayments: async (): Promise<any[]> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/payments`, { headers: getAuthHeader() });
-      if (res.ok) return await res.json();
-    } catch (_) {}
-
-    const db = getMockDB();
-    const bookings = db.bookings;
-    return bookings.map(b => ({
+    await ensureSeeded();
+    const bookings = await readFirebase('bookings', DEFAULT_MOCK_DATA.bookings);
+    return bookings.filter(Boolean).map((b: any) => ({
       id: `pay-${b.id}`,
       bookingId: b.id,
       amount: b.totalAmount,
@@ -663,20 +625,6 @@ export const api = {
 
   // 8. AUTHENTICATION
   login: async (username: string, password: string): Promise<any> => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        localStorage.setItem('detailing_admin_token', data.token);
-        return data.user;
-      }
-    } catch (_) {}
-
-    // Mock Login
     if (username === 'admin' && password === 'admin123') {
       localStorage.setItem('detailing_admin_token', 'mock_jwt_token_admin_2026');
       return { username: 'admin', name: 'Admin Detailing Pro', role: 'admin' };
