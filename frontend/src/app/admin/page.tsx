@@ -79,9 +79,15 @@ export default function AdminDashboard() {
 
   // Auth checking
   useEffect(() => {
-    const token = localStorage.getItem('detailing_admin_token');
+    let token = null;
+    try {
+      token = localStorage.getItem('detailing_admin_token');
+    } catch (_) {}
+    
     if (!token) {
-      router.push('/admin/login');
+      if (typeof window !== 'undefined') {
+        window.location.replace('./admin/login.html');
+      }
     } else {
       setIsAdmin(true);
       loadAllData();
@@ -123,7 +129,9 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     api.logout();
-    router.push('/admin/login');
+    if (typeof window !== 'undefined') {
+      window.location.replace('./admin/login.html');
+    }
   };
 
   // Status Color Code Helpers

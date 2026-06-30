@@ -20,7 +20,9 @@ export default function AdminLogin() {
     setLoading(true);
     try {
       await api.login(username, password);
-      router.push('/admin'); // Redirect to dashboard
+      if (typeof window !== 'undefined') {
+        window.location.replace('../admin.html');
+      }
     } catch (err: any) {
       setError('Credenciales inválidas. Por favor, reintenta.');
     } finally {
@@ -85,7 +87,7 @@ export default function AdminLogin() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 bg-gradient-to-r from-brand-blue to-brand-blue-hover hover:scale-[1.01] hover:shadow-lg disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-blue-glow transition-all"
+            className="w-full py-3.5 bg-brand-blue text-zinc-950 hover:bg-white hover:text-black transition-all rounded-xl text-xs font-bold"
           >
             {loading ? 'Iniciando Sesión...' : 'Ingresar al Panel'}
           </button>

@@ -222,8 +222,10 @@ async function readFirebase(path: string, defaultData: any): Promise<any> {
 
   // Fallback to local storage
   if (typeof window !== 'undefined') {
-    const local = localStorage.getItem(MOCK_STORAGE_KEY + '_' + path);
-    if (local) return JSON.parse(local);
+    try {
+      const local = localStorage.getItem(MOCK_STORAGE_KEY + '_' + path);
+      if (local) return JSON.parse(local);
+    } catch (_) {}
   }
   return defaultData;
 }
@@ -255,8 +257,12 @@ async function ensureSeeded() {
 // Check JWT Token
 function getAuthHeader(): Record<string, string> {
   if (typeof window === 'undefined') return {};
-  const token = localStorage.getItem('detailing_admin_token');
-  return token ? { 'Authorization': `Bearer ${token}` } : {};
+  try {
+    const token = localStorage.getItem('detailing_admin_token');
+    return token ? { 'Authorization': `Bearer ${token}` } : {};
+  } catch (_) {
+    return {};
+  }
 }
 
 // API client functions
@@ -626,7 +632,9 @@ export const api = {
   // 8. AUTHENTICATION
   login: async (username: string, password: string): Promise<any> => {
     if (username === 'admin' && password === 'admin123') {
-      localStorage.setItem('detailing_admin_token', 'mock_jwt_token_admin_2026');
+      try {
+        localStorage.setItem('detailing_admin_token', 'mock_jwt_token_admin_2026');
+      } catch (_) {}
       return { username: 'admin', name: 'Admin Detailing Pro', role: 'admin' };
     }
     throw new Error('Credenciales inválidas');
@@ -634,7 +642,9 @@ export const api = {
 
   logout: () => {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('detailing_admin_token');
+      try {
+        localStorage.removeItem('detailing_admin_token');
+      } catch (_) {}
     }
   }
 };
