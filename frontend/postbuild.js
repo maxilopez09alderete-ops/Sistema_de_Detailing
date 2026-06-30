@@ -25,17 +25,39 @@ function processDirectory(directory) {
       content = content.replace(/([\'"\\\/])\/_next\//g, `$1${prefix}_next/`);
       
       // 2. Convert all absolute page links to relative .html files (supporting query params and anchors)
-      content = content.replace(/href=["']\/reservar\??([^"']*)["']/g, `href="${prefix}reservar.html?$1"`);
+      content = content.replace(/href=["']\/reservar\??([^"']*)["']/g, (match, p1) => {
+        const query = p1 ? `?${p1}` : '';
+        return `href="${prefix}reservar.html${query}"`;
+      });
       content = content.replace(/href=["']\/admin\/?["']/g, `href="${prefix}admin.html"`);
       content = content.replace(/href=["']\/admin\/login\/?["']/g, `href="${prefix}admin/login.html"`);
       content = content.replace(/href=["']\/#([^"']*)["']/g, `href="${prefix}index.html#$1"`);
       content = content.replace(/href=["']\/["']/g, `href="${prefix}index.html"`);
 
       // 3. Convert all absolute paths inside Next.js JS script strings (for router/hydration state)
-      content = content.replace(/([\'"\\\/])\/reservar\??([^\'"\\]*)/g, `$1${prefix}reservar.html?$2`);
-      content = content.replace(/([\'"\\\/])\/admin\/?([^\'"\\\\])/g, `$1${prefix}admin.html$2`);
-      content = content.replace(/([\'"\\\/])\/admin\/login\/?([^\'"\\\\])/g, `$1${prefix}admin/login.html$2`);
-      content = content.replace(/([\'"\\\/])\/#([^\'"\\]*)/g, `$1${prefix}index.html#$2`);
+      content = content.replace(/([\'"\\\/])\/reservar\??([^\'"\\]*)/g, (match, p1, p2) => {
+        const backslashIndex = p2.indexOf('\\');
+        let params = p2;
+        let rest = '';
+        if (backslashIndex !== -1) {
+          params = p2.substring(0, backslashIndex);
+          rest = p2.substring(backslashIndex);
+        }
+        const query = params ? `?${params}` : '';
+        return `${p1}${prefix}reservar.html${query}${rest}`;
+      });
+      content = content.replace(/([\'"\\\/])\/admin\/?([\'"\\\\])/g, `$1${prefix}admin.html$2`);
+      content = content.replace(/([\'"\\\/])\/admin\/login\/?([\'"\\\\])/g, `$1${prefix}admin/login.html$2`);
+      content = content.replace(/([\'"\\\/])\/#([^\'"\\]*)/g, (match, p1, p2) => {
+        const backslashIndex = p2.indexOf('\\');
+        let anchor = p2;
+        let rest = '';
+        if (backslashIndex !== -1) {
+          anchor = p2.substring(0, backslashIndex);
+          rest = p2.substring(backslashIndex);
+        }
+        return `${p1}${prefix}index.html#${anchor}${rest}`;
+      });
       content = content.replace(/([\'"\\\/])\/([\'"\\\\])/g, `$1${prefix}index.html$2`);
       
       // 4. Format HTML output from a single line into a readable multi-line structure
