@@ -21,18 +21,22 @@ function processDirectory(directory) {
       
       console.log(`Processing relative paths for ${filePath} with prefix: ${prefix}`);
       
-      // Replace absolute next assets with relative paths
-      content = content.replace(/href="\/_next\//g, `href="${prefix}_next/`);
-      content = content.replace(/src="\/_next\//g, `src="${prefix}_next/`);
+      // 1. Convert all Next.js static asset references (CSS, JS, etc.)
+      content = content.replace(/([\'"\\\/])\/_next\//g, `$1${prefix}_next/`);
       
-      // Also in next initial state JSON-like script blocks
-      content = content.replace(/"\/_next\//g, `"${prefix}_next/`);
-      
-      // Replace page link absolute paths with relative .html files
-      content = content.replace(/href="\/reservar"/g, `href="${prefix}reservar.html"`);
-      content = content.replace(/href="\/admin"/g, `href="${prefix}admin.html"`);
-      content = content.replace(/href="\/admin\/login"/g, `href="${prefix}admin/login.html"`);
-      content = content.replace(/href="\/"/g, `href="${prefix}index.html"`);
+      // 2. Convert all absolute page links to relative .html files (supporting query params and anchors)
+      content = content.replace(/href=["']\/reservar\??([^"']*)["']/g, `href="${prefix}reservar.html?$1"`);
+      content = content.replace(/href=["']\/admin\/?["']/g, `href="${prefix}admin.html"`);
+      content = content.replace(/href=["']\/admin\/login\/?["']/g, `href="${prefix}admin/login.html"`);
+      content = content.replace(/href=["']\/#([^"']*)["']/g, `href="${prefix}index.html#$1"`);
+      content = content.replace(/href=["']\/["']/g, `href="${prefix}index.html"`);
+
+      // 3. Convert all absolute paths inside Next.js JS script strings (for router/hydration state)
+      content = content.replace(/([\'"\\\/])\/reservar\??([^\'"\\]*)/g, `$1${prefix}reservar.html?$2`);
+      content = content.replace(/([\'"\\\/])\/admin\/?([\'"\\\\])/g, `$1${prefix}admin.html$2`);
+      content = content.replace(/([\'"\\\/])\/admin\/login\/?([\'"\\\\])/g, `$1${prefix}admin/login.html$2`);
+      content = content.replace(/([\'"\\\/])\/#([^\'"\\]*)/g, `$1${prefix}index.html#$2`);
+      content = content.replace(/([\'"\\\/])\/([\'"\\\\])/g, `$1${prefix}index.html$2`);
       
       fs.writeFileSync(filePath, content, 'utf8');
     }
