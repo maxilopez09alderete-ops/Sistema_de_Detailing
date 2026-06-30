@@ -14,7 +14,11 @@ import {
   ArrowLeft,
   ArrowRight,
   MessageSquare,
-  Ticket
+  Ticket,
+  Truck,
+  Bike,
+  Phone,
+  MapPin
 } from 'lucide-react';
 
 function BookingWizardContent() {
@@ -256,22 +260,27 @@ function BookingWizardContent() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { id: 'Sedan', name: 'Sedán / Hatchback', icon: '🚗' },
-              { id: 'SUV', name: 'SUV / Monovolumen', icon: '🚙' },
-              { id: 'Pickup', name: 'Pickup / Utilitario', icon: '🛻' },
-              { id: 'Motocicleta', name: 'Motocicleta', icon: '🏍️' }
+              { id: 'Sedan', name: 'Sedán / Hatchback', type: 'sedan' },
+              { id: 'SUV', name: 'SUV / Monovolumen', type: 'suv' },
+              { id: 'Pickup', name: 'Pickup / Utilitario', type: 'pickup' },
+              { id: 'Motocicleta', name: 'Motocicleta', type: 'motorcycle' }
             ].map((v) => (
               <div 
                 key={v.id}
                 onClick={() => setVehicleType(v.id)}
-                className={`p-6 rounded-2xl bg-dark-card border cursor-pointer hover:border-dark-muted transition-all text-center space-y-3 ${
+                className={`p-6 rounded-2xl bg-dark-card border cursor-pointer hover:border-dark-muted transition-all text-center space-y-4 flex flex-col items-center justify-center ${
                   vehicleType === v.id 
-                    ? 'border-brand-orange shadow-orange-glow bg-brand-orange/5' 
+                    ? 'border-brand-orange bg-brand-orange/5' 
                     : 'border-dark-border/80'
                 }`}
               >
-                <div className="text-4xl">{v.icon}</div>
-                <h4 className="text-sm font-bold text-white">{v.name}</h4>
+                <div className="text-brand-orange">
+                  {v.type === 'sedan' && <Car className="w-8 h-8" />}
+                  {v.type === 'suv' && <Car className="w-8 h-8 rotate-12" />}
+                  {v.type === 'pickup' && <Truck className="w-8 h-8" />}
+                  {v.type === 'motorcycle' && <Bike className="w-8 h-8" />}
+                </div>
+                <h4 className="text-xs font-bold text-white">{v.name}</h4>
               </div>
             ))}
           </div>
@@ -582,11 +591,11 @@ function BookingWizardContent() {
             </p>
           </div>
 
-          <div className="p-6 rounded-2xl bg-dark-bg/60 border border-dark-border/60 text-left space-y-3 max-w-md mx-auto">
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-2">Detalles para asistir</h4>
-            <p className="text-xs text-dark-muted">🚗 <span className="text-white font-semibold">{selectedService?.name}</span> para tu <span className="text-white">{vehicleType}</span> (Patente: <span className="text-white">{vehiclePlate.toUpperCase()}</span>)</p>
-            <p className="text-xs text-dark-muted">📍 Av. del Libertador 4800, Palermo, CABA</p>
-            <p className="text-xs text-dark-muted">💵 Pago: <span className="text-white font-semibold">${confirmedBooking.totalAmount.toLocaleString('es-AR')} ({paymentMethod})</span></p>
+          <div className="p-6 rounded-2xl bg-dark-bg/60 border border-dark-border/40 text-left space-y-3 max-w-md mx-auto">
+            <h4 className="text-[10px] font-bold text-white uppercase tracking-wider mb-2">Detalles para asistir</h4>
+            <p className="text-xs text-dark-muted flex items-center gap-2"><Car className="w-4 h-4 text-brand-orange" /> <span className="text-white font-semibold">{selectedService?.name}</span> para tu <span className="text-white">{vehicleType}</span> (Patente: <span className="text-white">{vehiclePlate.toUpperCase()}</span>)</p>
+            <p className="text-xs text-dark-muted flex items-center gap-2"><MapPin className="w-4 h-4 text-brand-blue" /> Av. del Libertador 4800, Palermo, CABA</p>
+            <p className="text-xs text-dark-muted flex items-center gap-2"><CreditCard className="w-4 h-4 text-brand-orange" /> Pago: <span className="text-white font-semibold">${confirmedBooking.totalAmount.toLocaleString('es-AR')} ({paymentMethod})</span></p>
           </div>
 
           <div className="space-y-4 pt-4">
@@ -599,9 +608,9 @@ function BookingWizardContent() {
                 href={`https://wa.me/${customerPhone.replace('+', '')}?text=Hola!%20Recibí%20la%20confirmación%20del%20turno%20para%20el%20servicio%20de%20detail%20el%20día%20${selectedDate}%20a%20las%20${selectedSlot}%20hs.`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-3 rounded-xl text-xs font-bold text-white bg-green-600 hover:bg-green-700 transition-all flex items-center justify-center gap-2"
+                className="px-6 py-3 rounded-xl text-xs font-bold text-white bg-zinc-800 hover:bg-zinc-700 transition-all flex items-center justify-center gap-2"
               >
-                💬 Ver en WhatsApp
+                <MessageSquare className="w-4 h-4 text-white" /> Ver en WhatsApp
               </a>
               <button 
                 onClick={() => router.push('/')}

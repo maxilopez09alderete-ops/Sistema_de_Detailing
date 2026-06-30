@@ -96,32 +96,32 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-dark-bg via-dark-bg/80 to-transparent z-10" />
         
         <div className="relative z-20 max-w-5xl mx-auto px-4 text-center space-y-8 py-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-orange/10 border border-brand-orange/30 text-brand-orange text-xs font-semibold uppercase tracking-wider animate-pulse">
-            <Flame className="w-3.5 h-3.5" /> Tratamientos Cerámicos & Corrección de Pintura
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-orange/10 border border-brand-orange/20 text-brand-orange text-xs font-semibold uppercase tracking-wider">
+            <Flame className="w-3.5 h-3.5 text-brand-orange" /> Tratamientos Cerámicos & Corrección de Pintura
           </div>
           
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold font-display leading-tight tracking-tight text-white">
             El Brillo y la Protección <br />
-            <span className="bg-gradient-to-r from-brand-blue via-white to-brand-orange bg-clip-text text-transparent">
-              Que Tu Auto Se Merece
+            <span className="bg-gradient-to-r from-white via-zinc-300 to-brand-orange bg-clip-text text-transparent">
+              Que Tu Vehículo Merece
             </span>
           </h1>
           
-          <p className="max-w-2xl mx-auto text-dark-muted text-base sm:text-xl leading-relaxed">
-            Utilizamos productos importados premium y técnicas avanzadas de detallado para restaurar y proteger la carrocería de tu vehículo.
+          <p className="max-w-2xl mx-auto text-dark-muted text-base sm:text-lg leading-relaxed">
+            Utilizamos productos importados seleccionados y técnicas avanzadas de detallado para restaurar y conservar la carrocería en su máximo nivel de pureza.
           </p>
           
           <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-center items-center">
             <a 
               href="/reservar" 
-              className="w-full sm:w-auto px-8 py-4 rounded-xl font-bold bg-gradient-to-r from-brand-blue to-brand-blue-hover text-white shadow-blue-glow hover:shadow-xl hover:scale-105 transition-all text-center"
+              className="w-full sm:w-auto px-8 py-4 rounded-xl font-bold bg-brand-blue text-zinc-950 hover:bg-white transition-all text-center"
               id="hero-reserve-btn"
             >
               Reservar Turno Online
             </a>
             <a 
               href="#servicios" 
-              className="w-full sm:w-auto px-8 py-4 rounded-xl font-semibold bg-dark-card border border-dark-border text-white hover:bg-dark-border transition-all text-center"
+              className="w-full sm:w-auto px-8 py-4 rounded-xl font-semibold bg-dark-card border border-dark-border text-white hover:bg-zinc-900 transition-all text-center"
             >
               Ver Servicios
             </a>
@@ -175,18 +175,19 @@ export default function LandingPage() {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-dark-card via-transparent to-transparent" />
-                <div className="absolute top-4 right-4 bg-dark-bg/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold text-brand-orange border border-dark-border">
-                  📍 {service.durationMinutes >= 60 ? `${service.durationMinutes / 60} hs` : `${service.durationMinutes} min`}
+                <div className="absolute top-4 right-4 bg-dark-bg/85 backdrop-blur-md px-3 py-1.2 rounded-full text-xs font-medium text-brand-orange border border-dark-border flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-brand-orange" />
+                  <span>{service.durationMinutes >= 60 ? `${service.durationMinutes / 60} h` : `${service.durationMinutes} min`}</span>
                 </div>
               </div>
 
               <div className="p-6 flex-grow flex flex-col justify-between space-y-6">
                 <div className="space-y-3">
-                  <h4 className="text-xl font-bold text-white tracking-tight">{service.name}</h4>
-                  <p className="text-sm text-dark-muted line-clamp-3">{service.description}</p>
+                  <h4 className="text-lg font-bold text-white tracking-tight">{service.name}</h4>
+                  <p className="text-xs text-dark-muted line-clamp-3 leading-relaxed">{service.description}</p>
                   
                   <div className="pt-2">
-                    <p className="text-xs font-semibold text-white mb-2 uppercase tracking-wide">¿Qué incluye?</p>
+                    <p className="text-[10px] font-bold text-white mb-2 uppercase tracking-wider">Detalles Incluidos</p>
                     <ul className="space-y-1.5">
                       {service.includes.slice(0, 4).map((item: string, idx: number) => (
                         <li key={idx} className="text-xs text-dark-muted flex items-start gap-2">
@@ -195,23 +196,23 @@ export default function LandingPage() {
                         </li>
                       ))}
                       {service.includes.length > 4 && (
-                        <li className="text-xs text-brand-blue font-semibold">y {service.includes.length - 4} más...</li>
+                        <li className="text-xs text-brand-orange font-semibold">y {service.includes.length - 4} adicionales</li>
                       )}
                     </ul>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-dark-border flex items-center justify-between">
+                <div className="pt-4 border-t border-dark-border/40 flex items-center justify-between">
                   <div>
-                    <span className="text-xs text-dark-muted block">Precio Regular</span>
-                    <span className="text-2xl font-black text-white font-display">${service.price.toLocaleString('es-AR')}</span>
+                    <span className="text-[10px] text-dark-muted block">Precio</span>
+                    <span className="text-xl font-bold text-white font-display">${service.price.toLocaleString('es-AR')}</span>
                   </div>
                   
                   <a 
                     href={`/reservar?service=${service.id}`}
-                    className="p-3 rounded-xl bg-brand-blue/10 hover:bg-brand-blue text-brand-blue hover:text-white transition-all flex items-center justify-center gap-1 text-sm font-semibold"
+                    className="px-4 py-2.5 rounded-lg bg-brand-blue/10 hover:bg-brand-blue text-brand-blue hover:text-zinc-950 transition-all flex items-center justify-center gap-1 text-xs font-bold"
                   >
-                    Reservar <ChevronRight className="w-4 h-4" />
+                    Solicitar <ChevronRight className="w-3.5 h-3.5" />
                   </a>
                 </div>
               </div>
@@ -234,30 +235,30 @@ export default function LandingPage() {
               
               <div className="space-y-4 pt-2">
                 <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-dark-card border border-dark-border flex items-center justify-center text-brand-orange">
-                    🚗
+                  <div className="w-10 h-10 rounded-lg bg-dark-card border border-dark-border/80 flex items-center justify-center text-brand-orange">
+                    <Check className="w-4 h-4 text-brand-orange" />
                   </div>
                   <div>
                     <h5 className="text-white font-bold text-sm">Descontaminado Físico</h5>
-                    <p className="text-xs text-dark-muted">Eliminamos resinas, brea e impurezas adheridas al barniz.</p>
+                    <p className="text-xs text-dark-muted">Remoción profunda de resinas y contaminantes sobre la laca.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-dark-card border border-dark-border flex items-center justify-center text-brand-blue">
-                    ✨
+                  <div className="w-10 h-10 rounded-lg bg-dark-card border border-dark-border/80 flex items-center justify-center text-brand-blue">
+                    <Sparkles className="w-4 h-4 text-brand-blue" />
                   </div>
                   <div>
-                    <h5 className="text-white font-bold text-sm">Abrillantado de Alta Gama</h5>
-                    <p className="text-xs text-dark-muted">Eliminación del 90% de las micro-rayas superficiales.</p>
+                    <h5 className="text-white font-bold text-sm">Abrillantado Premium</h5>
+                    <p className="text-xs text-dark-muted">Corrección de imperfecciones y micro-rayas superficiales.</p>
                   </div>
                 </div>
               </div>
               
               <a 
                 href="/reservar" 
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold bg-brand-orange hover:bg-brand-orange-hover text-white transition-all shadow-orange-glow"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold bg-brand-orange hover:bg-brand-orange-hover text-zinc-950 transition-all"
               >
-                Quiero este resultado <ChevronRight className="w-4 h-4" />
+                Solicitar Tratamiento <ChevronRight className="w-4 h-4 text-zinc-950" />
               </a>
             </div>
 
@@ -276,7 +277,7 @@ export default function LandingPage() {
                   className="absolute inset-0 bg-cover bg-center"
                   style={{ backgroundImage: "url('https://images.unsplash.com/photo-1507136566006-cfc505b114fc?auto=format&fit=crop&w=1200&q=80')" }} // scratched car/dirty wheels
                 >
-                  <div className="absolute bottom-4 left-4 bg-dark-bg/75 px-3 py-1 rounded text-xs font-bold text-white border border-dark-border uppercase">
+                  <div className="absolute bottom-4 left-4 bg-zinc-950/80 px-3 py-1.5 rounded text-xs font-bold text-zinc-300 border border-zinc-800 uppercase tracking-wider">
                     Antes
                   </div>
                 </div>
@@ -289,18 +290,18 @@ export default function LandingPage() {
                     width: `${sliderPosition}%` 
                   }}
                 >
-                  <div className="absolute bottom-4 right-4 bg-brand-blue/85 px-3 py-1 rounded text-xs font-bold text-white border border-brand-blue/30 uppercase">
+                  <div className="absolute bottom-4 right-4 bg-zinc-950/80 px-3 py-1.5 rounded text-xs font-bold text-brand-orange border border-brand-orange/20 uppercase tracking-wider">
                     Después
                   </div>
                 </div>
 
                 {/* Handle Bar */}
                 <div 
-                  className="absolute top-0 bottom-0 w-1 bg-white hover:bg-brand-blue cursor-ew-resize z-30"
+                  className="absolute top-0 bottom-0 w-[0.5px] bg-zinc-700 cursor-ew-resize z-30"
                   style={{ left: `${sliderPosition}%` }}
                 >
-                  <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-white text-dark-bg flex items-center justify-center shadow-lg font-bold text-sm border-2 border-brand-blue">
-                    ↔
+                  <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-9 h-9 rounded-full bg-zinc-950 border border-zinc-800 text-zinc-300 flex items-center justify-center shadow-lg font-bold text-xs select-none">
+                    <span className="text-[9px] tracking-tighter opacity-80">||</span>
                   </div>
                 </div>
               </div>
@@ -367,9 +368,9 @@ export default function LandingPage() {
               <button 
                 type="submit" 
                 disabled={submittingReview}
-                className="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-brand-blue to-brand-blue-hover shadow-blue-glow hover:shadow-lg disabled:opacity-55 transition-all"
+                className="w-full py-2.5 rounded-xl text-sm font-bold text-zinc-950 bg-brand-blue hover:bg-white disabled:opacity-55 transition-all"
               >
-                {submittingReview ? 'Enviando...' : 'Enviar Opinión'}
+                {submittingReview ? 'Enviando...' : 'Publicar Reseña'}
               </button>
 
               {reviewMessage && (
@@ -453,18 +454,18 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              <div className="p-6 rounded-2xl bg-brand-blue/5 border border-brand-blue/10 space-y-2">
-                <h6 className="text-white font-bold text-xs uppercase tracking-wider">¿Tenés una urgencia?</h6>
+              <div className="p-6 rounded-2xl bg-zinc-800/10 border border-zinc-700/30 space-y-2">
+                <h6 className="text-white font-bold text-xs uppercase tracking-wider">Consultas Directas</h6>
                 <p className="text-xs text-dark-muted">
-                  Podés contactarnos directamente a nuestro WhatsApp de atención inmediata haciendo click en el botón inferior.
+                  ¿Tenés dudas sobre cuál es el tratamiento óptimo? Escribinos por WhatsApp para un asesoramiento personalizado.
                 </p>
                 <a 
                   href="https://wa.me/5491122334455?text=Hola!%20Quiero%20consultar%20por%20un%20turno%20de%20detailing" 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="inline-block mt-2 text-xs font-bold text-brand-blue hover:text-white transition-colors"
+                  className="inline-block mt-2 text-xs font-bold text-brand-orange hover:text-white transition-colors"
                 >
-                  💬 Enviar WhatsApp Directo →
+                  Enviar Mensaje Directo →
                 </a>
               </div>
             </div>
@@ -481,7 +482,7 @@ export default function LandingPage() {
                 referrerPolicy="no-referrer-when-downgrade"
               />
               <div className="absolute top-4 left-4 bg-dark-bg/90 backdrop-blur-md px-4 py-2.5 rounded-xl border border-dark-border text-xs text-white max-w-[240px]">
-                <p className="font-bold">✨ Detailing Pro Studio</p>
+                <p className="font-bold">Detailing Pro Studio</p>
                 <p className="text-[10px] text-dark-muted mt-0.5">Av. del Libertador 4800, Palermo</p>
               </div>
             </div>

@@ -10,27 +10,27 @@ module.exports = {
     extend: {
       colors: {
         dark: {
-          bg: '#08080a',       // Deep sport luxury black
-          card: '#111115',     // Dark slate gray cards
-          border: '#1f1f27',   // Premium subtle borders
-          input: '#181820',    // Dark inputs
-          text: '#f3f4f6',     // Off-white primary text
-          muted: '#9ca3af',    // Gray secondary text
+          bg: '#0a0a0c',       // Sober obsidian black
+          card: '#121215',     // Elegant deep charcoal
+          border: '#202026',   // Premium subtle gray borders
+          input: '#16161b',    // Dark inputs
+          text: '#f4f4f5',     // Off-white primary text (zinc-100)
+          muted: '#a1a1aa',    // Gray secondary text (zinc-400)
         },
         brand: {
           blue: {
-            DEFAULT: '#0088ff',
-            hover: '#0066cc',
-            glow: 'rgba(0, 136, 255, 0.15)',
+            DEFAULT: '#e4e4e7', // Matte Silver / Zinc-300 for main actions
+            hover: '#d4d4d8',   // Slightly darker silver for hover
+            glow: 'rgba(255, 255, 255, 0.03)',
           },
           orange: {
-            DEFAULT: '#ff5500',
-            hover: '#cc4400',
-            glow: 'rgba(255, 85, 0, 0.15)',
+            DEFAULT: '#c5a880', // Elegant Champagne Gold for high-end accent
+            hover: '#b0946c',   // Darker champagne for hover
+            glow: 'rgba(197, 168, 128, 0.03)',
           },
-          green: '#10b981',   // Available status color
-          red: '#ef4444',     // Busy status color
-          yellow: '#f59e0b',  // Pending status color
+          green: '#6ee7b7',     // Soft desaturated sage green
+          red: '#fca5a5',       // Soft desaturated rose red
+          yellow: '#fde047',    // Soft desaturated amber yellow
         }
       },
       fontFamily: {

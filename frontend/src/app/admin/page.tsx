@@ -308,7 +308,7 @@ export default function AdminDashboard() {
             onClick={loadAllData}
             className="px-4 py-2 rounded-xl text-xs font-bold border border-dark-border text-white hover:bg-dark-card transition-all"
           >
-            🔄 Actualizar Datos
+            Actualizar Datos
           </button>
           <button 
             onClick={handleLogout}
@@ -322,22 +322,22 @@ export default function AdminDashboard() {
       {/* Tabs Navigation */}
       <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-none border-b border-dark-border/40">
         {[
-          { id: 'stats', label: '📊 Estadísticas', desc: 'KPIs del negocio' },
-          { id: 'calendar', label: '📅 Calendario Agenda', desc: 'Vista de turnos de colores' },
-          { id: 'bookings', label: '🚗 Gestión Turnos', desc: 'Control de reservas' },
-          { id: 'customers', label: '👥 Historial Clientes', desc: 'Fidelización y visitas' },
-          { id: 'services', label: '🛠️ Servicios', desc: 'Duraciones y precios' },
-          { id: 'payments', label: '💳 Finanzas & Pagos', desc: 'Estado de facturación' },
-          { id: 'settings', label: '⚙️ Horarios y Bloqueos', desc: 'Días, descansos y vacaciones' },
-          { id: 'promotions', label: '🎟️ Cupones / Promos', desc: 'Descuentos y packs' },
-          { id: 'reviews', label: '💬 Reseñas', desc: 'Aprobación de opiniones' },
+          { id: 'stats', label: 'Estadísticas', desc: 'KPIs del negocio' },
+          { id: 'calendar', label: 'Calendario Agenda', desc: 'Vista de turnos de colores' },
+          { id: 'bookings', label: 'Gestión Turnos', desc: 'Control de reservas' },
+          { id: 'customers', label: 'Historial Clientes', desc: 'Fidelización y visitas' },
+          { id: 'services', label: 'Servicios', desc: 'Duraciones y precios' },
+          { id: 'payments', label: 'Finanzas & Pagos', desc: 'Estado de facturación' },
+          { id: 'settings', label: 'Horarios y Bloqueos', desc: 'Días, descansos y vacaciones' },
+          { id: 'promotions', label: 'Cupones / Promos', desc: 'Descuentos y packs' },
+          { id: 'reviews', label: 'Reseñas', desc: 'Aprobación de opiniones' },
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-2.5 rounded-xl text-xs font-bold flex-shrink-0 transition-all border ${
               activeTab === tab.id
-                ? 'bg-brand-blue border-brand-blue text-white shadow-blue-glow'
+                ? 'bg-brand-blue border-brand-blue text-zinc-950 shadow-sm'
                 : 'bg-dark-card border-dark-border/60 text-dark-muted hover:text-white hover:border-dark-border'
             }`}
           >
@@ -383,8 +383,8 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Service popularity card */}
             <div className="p-6 rounded-2xl bg-dark-card border border-dark-border space-y-4">
-              <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                🏆 Servicio Más Solicitado
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                Servicio Más Solicitado
               </h4>
               <div className="p-6 rounded-xl bg-dark-bg border border-dark-border/40 text-center space-y-2">
                 <h5 className="text-lg font-bold text-brand-orange">{stats.popularService?.name || 'Lavado Premium'}</h5>
@@ -394,8 +394,8 @@ export default function AdminDashboard() {
 
             {/* Top Customers card */}
             <div className="p-6 rounded-2xl bg-dark-card border border-dark-border space-y-4">
-              <h4 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                ⭐️ Clientes Frecuentes (Mayor Gasto)
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                Clientes Frecuentes
               </h4>
               <div className="space-y-3">
                 {stats.frequentCustomers.map((cust: any, idx: number) => (
@@ -494,8 +494,8 @@ export default function AdminDashboard() {
                           <h4 className="text-sm font-bold text-white">{b.customerName} ({b.vehiclePlate})</h4>
                           <div className="flex flex-wrap gap-2 items-center text-[10px] text-dark-muted">
                             <span className="px-2 py-0.5 rounded bg-dark-bg border border-dark-border text-white font-medium">{b.service?.name}</span>
-                            <span>📱 {b.customerPhone}</span>
-                            <span>💵 Pago: {b.paymentMethod} ({b.paymentStatus})</span>
+                            <span>Tel: {b.customerPhone}</span>
+                            <span>Pago: {b.paymentMethod} ({b.paymentStatus})</span>
                           </div>
                         </div>
                       </div>
@@ -661,7 +661,7 @@ export default function AdminDashboard() {
                         }`}>
                           {c.loyaltyPoints} / 10
                         </span>
-                        {c.loyaltyPoints >= 10 && <span className="block text-[8px] text-brand-orange font-bold uppercase mt-1">🎁 Próximo Lavado Gratis</span>}
+                        {c.loyaltyPoints >= 10 && <span className="block text-[8px] text-brand-orange font-bold uppercase mt-1">Próximo Lavado Gratis</span>}
                       </td>
                       <td className="p-4 text-right font-black text-brand-green">${c.totalSpent.toLocaleString('es-AR')}</td>
                       <td className="p-4 text-center text-dark-muted">{c.lastVisit ? new Date(c.lastVisit).toLocaleDateString() : 'Nunca'}</td>

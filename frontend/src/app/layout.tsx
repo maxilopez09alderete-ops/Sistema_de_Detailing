@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="es" className="scroll-smooth">
       <head>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✨</text></svg>" />
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%230a0a0c%22 /><text y=%22.75em%22 x=%22.18em%22 font-size=%2260%22 font-family=%22sans-serif%22 font-weight=%22bold%22 fill=%22%23c5a880%22>D</text></svg>" />
       </head>
       <body className="bg-mesh min-h-screen text-dark-text selection:bg-brand-blue selection:text-white flex flex-col justify-between">
         {/* Navigation Header */}
@@ -25,10 +25,10 @@ export default function RootLayout({
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <a href="/" className="flex items-center gap-2 group">
-                <span className="text-2xl font-extrabold font-display bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent group-hover:opacity-90 transition-opacity">
+                <span className="text-xl font-bold font-display bg-gradient-to-r from-white to-brand-orange bg-clip-text text-transparent group-hover:opacity-90 transition-opacity">
                   DETAILING<span className="text-white">PRO</span>
                 </span>
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-brand-orange/10 text-brand-orange border border-brand-orange/20 uppercase tracking-widest">
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-brand-orange/10 text-brand-orange border border-brand-orange/20 uppercase tracking-widest">
                   Studio
                 </span>
               </a>
@@ -51,7 +51,7 @@ export default function RootLayout({
               </a>
               <a 
                 href="/reservar" 
-                className="relative px-5 py-2.5 rounded-xl font-semibold text-sm bg-gradient-to-r from-brand-blue to-brand-blue-hover text-white shadow-blue-glow hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
+                className="px-5 py-2.5 rounded-xl font-bold text-xs bg-brand-blue text-zinc-950 hover:bg-white hover:text-black transition-all"
                 id="btn-nav-reserve"
               >
                 Reservar Turno
@@ -70,7 +70,7 @@ export default function RootLayout({
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-grid-cols-1 md:grid-cols-4 gap-8">
               <div className="space-y-4">
-                <span className="text-xl font-extrabold font-display bg-gradient-to-r from-brand-blue to-brand-orange bg-clip-text text-transparent">
+                <span className="text-lg font-bold font-display bg-gradient-to-r from-white to-brand-orange bg-clip-text text-transparent">
                   DETAILING<span className="text-white">PRO</span>
                 </span>
                 <p className="text-sm text-dark-muted leading-relaxed">
@@ -102,12 +102,12 @@ export default function RootLayout({
               <div>
                 <h4 className="text-white font-semibold text-sm mb-4 tracking-wider uppercase">Contacto</h4>
                 <ul className="space-y-2 text-sm text-dark-muted">
-                  <li>📍 Av. del Libertador 4800, Palermo</li>
-                  <li>📞 +54 9 11 2233-4455</li>
-                  <li>✉️ info@detailingpro.com</li>
-                  <li className="pt-2 flex gap-4 text-lg">
-                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-brand-orange transition-colors">📷 Instagram</a>
-                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-brand-blue transition-colors">🌐 Facebook</a>
+                  <li>Av. del Libertador 4800, Palermo</li>
+                  <li>+54 9 11 2233-4455</li>
+                  <li>info@detailingpro.com</li>
+                  <li className="pt-2 flex gap-4 text-xs font-semibold">
+                    <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-brand-orange transition-colors">Instagram</a>
+                    <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-brand-blue transition-colors">Facebook</a>
                   </li>
                 </ul>
               </div>
