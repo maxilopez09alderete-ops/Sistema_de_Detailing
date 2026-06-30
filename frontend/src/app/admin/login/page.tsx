@@ -94,8 +94,8 @@ export default function AdminLogin() {
         </form>
 
         <div className="text-center text-[10px] text-dark-muted pt-2 border-t border-dark-border/40">
-          * Para demostración rápida, podés ingresar con: <br />
-          <span className="text-white font-mono">admin</span> / <span className="text-white font-mono">admin123</span>
+          * Credenciales de acceso de administración: <br />
+          <span className="text-white font-mono">maxilopez09alderete@gmail.com</span> / <span className="text-white font-mono">980308Maxi</span>
         </div>
       </div>
     </div>

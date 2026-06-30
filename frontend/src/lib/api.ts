@@ -631,11 +631,11 @@ export const api = {
 
   // 8. AUTHENTICATION
   login: async (username: string, password: string): Promise<any> => {
-    if (username === 'admin' && password === 'admin123') {
+    if (username === 'maxilopez09alderete@gmail.com' && password === '980308Maxi') {
       try {
         localStorage.setItem('detailing_admin_token', 'mock_jwt_token_admin_2026');
       } catch (_) {}
-      return { username: 'admin', name: 'Admin Detailing Pro', role: 'admin' };
+      return { username: 'maxilopez09alderete@gmail.com', name: 'Admin Detailing Pro', role: 'admin' };
     }
     throw new Error('Credenciales inválidas');
   },
