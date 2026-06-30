@@ -33,10 +33,13 @@ function processDirectory(directory) {
 
       // 3. Convert all absolute paths inside Next.js JS script strings (for router/hydration state)
       content = content.replace(/([\'"\\\/])\/reservar\??([^\'"\\]*)/g, `$1${prefix}reservar.html?$2`);
-      content = content.replace(/([\'"\\\/])\/admin\/?([\'"\\\\])/g, `$1${prefix}admin.html$2`);
-      content = content.replace(/([\'"\\\/])\/admin\/login\/?([\'"\\\\])/g, `$1${prefix}admin/login.html$2`);
+      content = content.replace(/([\'"\\\/])\/admin\/?([^\'"\\\\])/g, `$1${prefix}admin.html$2`);
+      content = content.replace(/([\'"\\\/])\/admin\/login\/?([^\'"\\\\])/g, `$1${prefix}admin/login.html$2`);
       content = content.replace(/([\'"\\\/])\/#([^\'"\\]*)/g, `$1${prefix}index.html#$2`);
       content = content.replace(/([\'"\\\/])\/([\'"\\\\])/g, `$1${prefix}index.html$2`);
+      
+      // 4. Format HTML output from a single line into a readable multi-line structure
+      content = content.replace(/></g, '>\n<');
       
       fs.writeFileSync(filePath, content, 'utf8');
     }
@@ -45,7 +48,7 @@ function processDirectory(directory) {
 
 if (fs.existsSync(outDir)) {
   processDirectory(outDir);
-  console.log('Post-build absolute paths converted to relative paths successfully.');
+  console.log('Post-build absolute paths converted to relative paths and formatted successfully.');
 } else {
   console.error('Out directory not found.');
 }
